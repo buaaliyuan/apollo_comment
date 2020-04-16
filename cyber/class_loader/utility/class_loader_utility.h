@@ -27,6 +27,7 @@
 #include <typeinfo>
 #include <utility>
 #include <vector>
+#include <iostream>
 
 #include "cyber/class_loader/utility/class_factory.h"
 #include "cyber/common/log.h"
@@ -72,34 +73,47 @@ Base* CreateClassObj(const std::string& class_name, ClassLoader* loader);
 template <typename Base>
 std::vector<std::string> GetValidClassNames(ClassLoader* loader);
 
+//这个函数会在库加载时被触发,会将类名称和基类名称注册进来,基类名称都是ComponentBase
 template <typename Derived, typename Base>
 void RegisterClass(const std::string& class_name,
                    const std::string& base_class_name) {
   AINFO << "registerclass:" << class_name << "," << base_class_name << ","
         << GetCurLoadingLibraryName();
 
+  //创建一个class factory
   utility::AbstractClassFactory<Base>* new_class_factrory_obj =
       new utility::ClassFactory<Derived, Base>(class_name, base_class_name);
-  new_class_factrory_obj->AddOwnedClassLoader(GetCurActiveClassLoader());
-  new_class_factrory_obj->SetRelativeLibraryPath(GetCurLoadingLibraryName());
 
+  //添加classloader和库路径到classfactory,这些参数是通过解析dag文件得到的
+  new_class_factrory_obj->AddOwnedClassLoader(GetCurActiveClassLoader());//设置factory关联的loader
+  new_class_factrory_obj->SetRelativeLibraryPath(GetCurLoadingLibraryName());//设置类名称
+
+  std::cout << "+++ " << GetCurLoadingLibraryName()  << std::endl;
   GetClassFactoryMapMapMutex().lock();
+
+  //构建一个map,可以从基类索引出一个map,这个map是子类名称到子类classfactory
   ClassClassFactoryMap& factory_map =
       GetClassFactoryMapByBaseClass(typeid(Base).name());
+
+
   factory_map[class_name] = new_class_factrory_obj;
+  
   GetClassFactoryMapMapMutex().unlock();
 }
 
 template <typename Base>
 Base* CreateClassObj(const std::string& class_name, ClassLoader* loader) {
   GetClassFactoryMapMapMutex().lock();
+  //根据基类名称找到class factory
   ClassClassFactoryMap& factoryMap =
       GetClassFactoryMapByBaseClass(typeid(Base).name());
   AbstractClassFactory<Base>* factory = nullptr;
+
+
   if (factoryMap.find(class_name) != factoryMap.end()) {
-    factory = dynamic_cast<utility::AbstractClassFactory<Base>*>(
-        factoryMap[class_name]);
+    factory = dynamic_cast<utility::AbstractClassFactory<Base>*>(factoryMap[class_name]);
   }
+
   GetClassFactoryMapMapMutex().unlock();
 
   Base* classobj = nullptr;

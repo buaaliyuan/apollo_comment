@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
 
   // parse the argument
   ModuleArgument module_args;
-  module_args.ParseArgument(argc, argv);
+  module_args.ParseArgument(argc, argv);//解析参数
 
   // initialize cyber
   apollo::cyber::Init(argv[0]);

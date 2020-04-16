@@ -183,6 +183,8 @@ bool Component<M0, NullType, NullType, NullType>::Initialize(
 
   std::weak_ptr<Component<M0>> self =
       std::dynamic_pointer_cast<Component<M0>>(shared_from_this());
+
+  
   auto func = [self](const std::shared_ptr<M0>& msg) {
     auto ptr = self.lock();
     if (ptr) {

@@ -35,10 +35,12 @@ void ModuleController::Clear() {
 }
 
 bool ModuleController::LoadAll() {
-  const std::string work_root = common::WorkRoot();
-  const std::string current_path = common::GetCurrentPath();
+  const std::string work_root = common::WorkRoot();//cyber根目录
+  const std::string current_path = common::GetCurrentPath();//当前路径
   const std::string dag_root_path = common::GetAbsolutePath(work_root, "dag");
   std::vector<std::string> paths;
+
+  //解析命令行传入的所有dag参数,
   for (auto& dag_conf : args_.GetDAGConfList()) {
     std::string module_path = "";
     if (dag_conf == common::GetFileName(dag_conf)) {
@@ -61,6 +63,8 @@ bool ModuleController::LoadAll() {
     total_component_nums += scheduler::Instance()->TaskPoolSize();
   }
   common::GlobalData::Instance()->SetComponentNums(total_component_nums);
+
+  //迭代买个dag文件
   for (auto module_path : paths) {
     AINFO << "Start initialize dag: " << module_path;
     if (!LoadModule(module_path)) {
@@ -71,10 +75,13 @@ bool ModuleController::LoadAll() {
   return true;
 }
 
+//加载一个dag文件中的所有component
 bool ModuleController::LoadModule(const DagConfig& dag_config) {
   const std::string work_root = common::WorkRoot();
 
   for (auto module_config : dag_config.module_config()) {
+
+    //生成module_library的绝对路径
     std::string load_path;
     if (module_config.module_library().front() == '/') {
       load_path = module_config.module_library();
@@ -88,8 +95,11 @@ bool ModuleController::LoadModule(const DagConfig& dag_config) {
       return false;
     }
 
+    //加载这个动态库,加载库的时候会自动将库中包含的所有component注册到全局,最后构成一个类名索引factory的map
+    //解析dag文件会自动创建其中的各个component
     class_loader_manager_.LoadLibrary(load_path);
 
+    //component
     for (auto& component : module_config.components()) {
       const std::string& class_name = component.class_name();
       std::shared_ptr<ComponentBase> base =
@@ -100,6 +110,7 @@ bool ModuleController::LoadModule(const DagConfig& dag_config) {
       component_list_.emplace_back(std::move(base));
     }
 
+    //timer component
     for (auto& component : module_config.timer_components()) {
       const std::string& class_name = component.class_name();
       std::shared_ptr<ComponentBase> base =
@@ -125,6 +136,7 @@ bool ModuleController::LoadModule(const std::string& path) {
 int ModuleController::GetComponentNum(const std::string& path) {
   DagConfig dag_config;
   int component_nums = 0;
+  //每个dag中存在多个component模块
   if (common::GetProtoFromFile(path, &dag_config)) {
     for (auto module_config : dag_config.module_config()) {
       component_nums += module_config.components_size();

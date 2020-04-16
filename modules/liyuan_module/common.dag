@@ -1,0 +1,27 @@
+# Define all coms in DAG streaming.
+    module_config {
+    module_library : "/apollo/bazel-bin/modules/liyuan_module/libcommon_component_example_1.so"
+    components {
+        class_name : "CommonComponentSample"
+        config {
+            name : "common"
+            readers {
+                channel: "/apollo/prediction"
+            }
+            readers {
+                channel: "/apollo/test"
+            }
+        }
+    }
+    
+    components{
+        class_name: "HippoSample"
+        config {
+            name: "hippo"
+            config_file_path: "/config file path"
+            readers{
+                channel: "/apollo/abc"
+            }
+        }
+    }
+    }

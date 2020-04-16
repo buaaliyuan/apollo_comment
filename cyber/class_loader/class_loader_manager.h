@@ -62,6 +62,7 @@ template <typename Base>
 std::shared_ptr<Base> ClassLoaderManager::CreateClassObj(
     const std::string& class_name) {
   std::vector<ClassLoader*> class_loaders = GetAllValidClassLoaders();
+  //查找匹配的class loader
   for (auto class_loader : class_loaders) {
     if (class_loader->IsClassValid<Base>(class_name)) {
       return (class_loader->CreateClassObj<Base>(class_name));

@@ -99,6 +99,9 @@ function generate_build_targets() {
   cyber)
     BUILD_TARGETS=`bazel query //cyber/... union //modules/tools/visualizer/...`
     ;;
+  liyuan_module)
+    BUILD_TARGETS=`bazel query //cyber/... union //modules/liyuan_module/...`
+    ;;
   drivers)
     BUILD_TARGETS=`bazel query //cyber/... union //modules/tools/visualizer/... union //modules/drivers/... except //modules/drivers/tools/... except //modules/drivers/canbus/... except //modules/drivers/video/...`
     ;;
@@ -739,9 +742,9 @@ function main() {
   fi
 
   local cmd=$1
-  shift
+  shift #向左移出参数
 
-  START_TIME=$(get_now)
+  START_TIME=$(get_now) #获取当前秒
   case $cmd in
     check)
       DEFINES="${DEFINES} --cxxopt=-DCPU_ONLY"
@@ -892,6 +895,17 @@ function main() {
     clean)
       clean
       ;;
+    liyuan_module)
+      export LD_PRELOAD=
+      BUILD_FILTER="liyuan_module"
+      if [ "$1" == "opt" ]; then
+        shift
+        apollo_build_opt $@
+      else
+        shift
+        apollo_build_dbg $@
+      fi
+      ;;
     version)
       version
       ;;
@@ -904,4 +918,4 @@ function main() {
   esac
 }
 
-main $@
+main $@ #所有参数

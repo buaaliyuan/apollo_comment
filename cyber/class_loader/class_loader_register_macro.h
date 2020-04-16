@@ -18,6 +18,7 @@
 #define CYBER_CLASS_LOADER_CLASS_LOADER_REGISTER_MACRO_H_
 
 #include "cyber/class_loader/utility/class_loader_utility.h"
+#include <iostream>
 
 #define CLASS_LOADER_REGISTER_CLASS_INTERNAL(Derived, Base, UniqueID)     \
   namespace {                                                             \
@@ -25,6 +26,7 @@
     ProxyType##UniqueID() {                                               \
       apollo::cyber::class_loader::utility::RegisterClass<Derived, Base>( \
           #Derived, #Base);                                               \
+      std::cout << #Derived <<" registered" << std::endl;                    \
     }                                                                     \
   };                                                                      \
   static ProxyType##UniqueID g_register_class_##UniqueID;                 \

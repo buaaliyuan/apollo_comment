@@ -1,0 +1,8 @@
+
+<cyber>
+    <component>
+        <name>common</name>
+        <dag_conf>/apollo/modules/liyuan_module/common.dag</dag_conf>
+        <process_name>common</process_name>
+    </component>
+</cyber>

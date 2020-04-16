@@ -34,12 +34,12 @@ std::recursive_mutex& GetLibPathPocoShareLibMutex() {
 }
 
 BaseToClassFactoryMapMap& GetClassFactoryMapMap() {
-  static BaseToClassFactoryMapMap instance;
+  static BaseToClassFactoryMapMap instance;//key:基类名称  val:子类->class_factory的map
   return instance;
 }
 
 LibpathPocolibVector& GetLibPathPocoShareLibVector() {
-  static LibpathPocolibVector instance;
+  static LibpathPocolibVector instance;//存储了pair<path,pocolib>的vector
   return instance;
 }
 
@@ -166,7 +166,7 @@ LibpathPocolibVector::iterator FindLoadedLibrary(
 bool IsLibraryLoadedByAnybody(const std::string& library_path) {
   std::lock_guard<std::recursive_mutex> lck(GetLibPathPocoShareLibMutex());
 
-  LibpathPocolibVector& opened_libraries = GetLibPathPocoShareLibVector();
+  LibpathPocolibVector& opened_libraries = GetLibPathPocoShareLibVector();//所有打开的库
   LibpathPocolibVector::iterator itr = FindLoadedLibrary(library_path);
   return itr != opened_libraries.end();
 }
@@ -194,6 +194,7 @@ bool IsLibraryLoaded(const std::string& library_path,
 }
 
 bool LoadLibrary(const std::string& library_path, ClassLoader* loader) {
+  //查找库是否已经被加载
   if (IsLibraryLoadedByAnybody(library_path)) {
     AINFO << "lib has been loaded by others,only attach to class factory obj."
           << library_path;
@@ -211,9 +212,9 @@ bool LoadLibrary(const std::string& library_path, ClassLoader* loader) {
     std::lock_guard<std::recursive_mutex> lck(loader_mutex);
 
     try {
-      SetCurActiveClassLoader(loader);
-      SetCurLoadingLibraryName(library_path);
-      poco_library = PocoLibraryPtr(new Poco::SharedLibrary(library_path));
+      SetCurActiveClassLoader(loader);//设置这个库关联的loader
+      SetCurLoadingLibraryName(library_path);//库路径
+      poco_library = PocoLibraryPtr(new Poco::SharedLibrary(library_path));//加载库的时候会触发注册类的过程
     } catch (const Poco::LibraryLoadException& e) {
       SetCurLoadingLibraryName("");
       SetCurActiveClassLoader(nullptr);
@@ -244,6 +245,8 @@ bool LoadLibrary(const std::string& library_path, ClassLoader* loader) {
 
   std::lock_guard<std::recursive_mutex> lck(GetLibPathPocoShareLibMutex());
   LibpathPocolibVector& opened_libraries = GetLibPathPocoShareLibVector();
+  
+  //所有的打开的库
   opened_libraries.emplace_back(
       std::pair<std::string, PocoLibraryPtr>(library_path, poco_library));
   return true;
