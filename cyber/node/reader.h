@@ -269,11 +269,14 @@ bool Reader<MessageT>::Init() {
   }
   auto sched = scheduler::Instance();
   croutine_name_ = role_attr_.node_name() + "_" + role_attr_.channel_name();
+
   auto dv = std::make_shared<data::DataVisitor<MessageT>>(
       role_attr_.channel_id(), pending_queue_size_);
+
   // Using factory to wrap templates.
   croutine::RoutineFactory factory =
       croutine::CreateRoutineFactory<MessageT>(std::move(func), dv);
+      
   if (!sched->CreateTask(factory, croutine_name_)) {
     AERROR << "Create Task Failed!";
     init_.store(false);

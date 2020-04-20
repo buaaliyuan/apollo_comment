@@ -219,6 +219,7 @@ auto Node::CreateReader(const ReaderConfig& config,
                         const CallbackFunc<MessageT>& reader_func)
     -> std::shared_ptr<cyber::Reader<MessageT>> {
   std::lock_guard<std::mutex> lg(readers_mutex_);
+  //检查reader是否重复
   if (readers_.find(config.channel_name) != readers_.end()) {
     AWARN << "Failed to create reader: reader with the same channel already "
              "exists.";
@@ -226,9 +227,12 @@ auto Node::CreateReader(const ReaderConfig& config,
   }
   auto reader =
       node_channel_impl_->template CreateReader<MessageT>(config, reader_func);
+
   if (reader != nullptr) {
     readers_.emplace(std::make_pair(config.channel_name, reader));
   }
+
+  
   return reader;
 }
 

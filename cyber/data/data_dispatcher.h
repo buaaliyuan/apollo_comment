@@ -34,11 +34,12 @@ namespace data {
 using apollo::cyber::Time;
 using apollo::cyber::base::AtomicHashMap;
 
+//一个类型具有一个单例的DataDispatcher,这个类保存了通道以及对应的多个buffer vector
 template <typename T>
 class DataDispatcher {
  public:
   using BufferVector =
-      std::vector<std::weak_ptr<CacheBuffer<std::shared_ptr<T>>>>;
+      std::vector<std::weak_ptr<CacheBuffer<std::shared_ptr<T>>>>;//这里用的是weakptr
   ~DataDispatcher() {}
 
   void AddBuffer(const ChannelBuffer<T>& channel_buffer);
@@ -67,8 +68,9 @@ void DataDispatcher<T>::AddBuffer(const ChannelBuffer<T>& channel_buffer) {
     BufferVector new_buffers = {buffer};
     buffers_map_.Set(channel_buffer.channel_id(), new_buffers);
   }
-}
+} 
 
+//分发数据到对应的channel的buffer中
 template <typename T>
 bool DataDispatcher<T>::Dispatch(const uint64_t channel_id,
                                  const std::shared_ptr<T>& msg) {
@@ -86,7 +88,7 @@ bool DataDispatcher<T>::Dispatch(const uint64_t channel_id,
   } else {
     return false;
   }
-  return notifier_->Notify(channel_id);
+  return notifier_->Notify(channel_id);//通知channel有数据更新,
 }
 
 }  // namespace data

@@ -43,7 +43,7 @@ class DataVisitorBase {
   DataVisitorBase& operator=(const DataVisitorBase&) = delete;
 
   uint64_t next_msg_index_ = 0;
-  DataNotifier* data_notifier_ = DataNotifier::Instance();
+  DataNotifier* data_notifier_ = DataNotifier::Instance();//全局单例
   std::shared_ptr<Notifier> notifier_;
 };
 

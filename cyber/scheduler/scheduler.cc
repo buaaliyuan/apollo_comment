@@ -58,6 +58,7 @@ bool Scheduler::CreateTask(std::function<void()>&& func,
   }
 
   if (visitor != nullptr) {
+    //修改datavisitor绑定的函数,这个函数会在Datadispatcher时调用
     visitor->RegisterNotifyCallback([this, task_id]() {
       if (cyber_unlikely(stop_.load())) {
         return;

@@ -168,7 +168,7 @@ bool Component<M0, NullType, NullType, NullType>::Initialize(
     AERROR << "Invalid config file: too few readers.";
     return false;
   }
-
+  //调用用户实现的Init
   if (!Init()) {
     AERROR << "Component Init() failed.";
     return false;
@@ -188,7 +188,7 @@ bool Component<M0, NullType, NullType, NullType>::Initialize(
   auto func = [self](const std::shared_ptr<M0>& msg) {
     auto ptr = self.lock();
     if (ptr) {
-      ptr->Process(msg);
+      ptr->Process(msg);//内部调用用户定义的proc函数
     } else {
       AERROR << "Component object has been destroyed.";
     }
@@ -197,6 +197,7 @@ bool Component<M0, NullType, NullType, NullType>::Initialize(
   std::shared_ptr<Reader<M0>> reader = nullptr;
 
   if (cyber_likely(is_reality_mode)) {
+    //真实模式下调用reader
     reader = node_->CreateReader<M0>(reader_cfg);
   } else {
     reader = node_->CreateReader<M0>(reader_cfg, func);
@@ -214,10 +215,16 @@ bool Component<M0, NullType, NullType, NullType>::Initialize(
 
   data::VisitorConfig conf = {readers_[0]->ChannelId(),
                               readers_[0]->PendingQueueSize()};
+
+  //创建一个datavisitor
   auto dv = std::make_shared<data::DataVisitor<M0>>(conf);
+
   croutine::RoutineFactory factory =
       croutine::CreateRoutineFactory<M0>(func, dv);
+
   auto sched = scheduler::Instance();
+
+  //创建任务
   return sched->CreateTask(factory, node_->Name());
 }
 

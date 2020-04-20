@@ -49,8 +49,8 @@ class ChannelBuffer {
   std::shared_ptr<BufferType> Buffer() const { return buffer_; }
 
  private:
-  uint64_t channel_id_;
-  std::shared_ptr<BufferType> buffer_;
+  uint64_t channel_id_;//通道ID
+  std::shared_ptr<BufferType> buffer_;//channel buffer
 };
 
 template <typename T>

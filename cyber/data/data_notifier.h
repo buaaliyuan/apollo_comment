@@ -51,13 +51,14 @@ class DataNotifier {
 
  private:
   std::mutex notifies_map_mutex_;
-  AtomicHashMap<uint64_t, NotifyVector> notifies_map_;
+  AtomicHashMap<uint64_t, NotifyVector> notifies_map_;//存储了channelID到nofifer vector的映射
 
   DECLARE_SINGLETON(DataNotifier)
 };
 
 inline DataNotifier::DataNotifier() {}
 
+//注册通道以及相应的回调notifer
 inline void DataNotifier::AddNotifier(
     uint64_t channel_id, const std::shared_ptr<Notifier>& notifier) {
   std::lock_guard<std::mutex> lock(notifies_map_mutex_);
@@ -70,6 +71,7 @@ inline void DataNotifier::AddNotifier(
   }
 }
 
+//回调该channel注册的所有notifier
 inline bool DataNotifier::Notify(const uint64_t channel_id) {
   NotifyVector* notifies = nullptr;
   if (notifies_map_.Get(channel_id, &notifies)) {

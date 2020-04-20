@@ -215,6 +215,7 @@ auto NodeChannelImpl::CreateReader(const proto::RoleAttributes& role_attr,
     reader_ptr =
         std::make_shared<blocker::IntraReader<MessageT>>(new_attr, reader_func);
   } else {
+    //真实模式
     reader_ptr = std::make_shared<Reader<MessageT>>(new_attr, reader_func,
                                                     pending_queue_size);
   }
